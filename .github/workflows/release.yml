@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            target: aarch64-apple-darwin
+            features: "--features metal"
+          - platform: macos-latest
+            target: x86_64-apple-darwin
+            features: "--features metal"
+          - platform: ubuntu-22.04
+            target: ""
+            features: ""
+          - platform: windows-latest
+            target: ""
+            features: "--features vulkan"
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf build-essential libclang-dev cmake
+      - name: Install LLVM (Windows, for whisper-rs bindgen)
+        if: matrix.platform == 'windows-latest'
+        run: choco install llvm -y
+      - name: Install Vulkan SDK (Windows, for --features vulkan)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          choco install vulkan-sdk -y
+          echo "VULKAN_SDK=${env:ProgramFiles}\VulkanSDK\${env:VK_SDK_VERSION}" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build and release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Material Dictation ${{ github.ref_name }}"
+          releaseBody: "Material Dictation 发布。下载对应平台的安装包使用。"
+          releaseDraft: true
+          prerelease: false
+          # GPU 构建按平台开启（whisper-rs 编译期 feature）：
+          #   macOS → --features metal；Windows → --features vulkan（需上方装 Vulkan SDK）。
+          # CUDA 需带 CUDA 工具链的 self-hosted runner，未列入。默认(CPU)仍为 linux。
+          args: --target ${{ matrix.target }} ${{ matrix.features }}

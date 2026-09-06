@@ -1,0 +1,75 @@
+[package]
+name = "material-dictation"
+version = "0.1.0"
+description = "English dictation practice PPT maker"
+authors = ["fltLi"]
+edition = "2021"
+license = "GPL-3.0-only"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "material_dictation_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[features]
+# Default build is CPU-only so local development stays lightweight.
+# GPU backends are opt-in compile-time features (whisper.cpp backends).
+default = []
+cuda = ["whisper-rs/cuda"]
+metal = ["whisper-rs/metal"]
+vulkan = ["whisper-rs/vulkan"]
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"] }
+hound = "3"
+
+tokio = { version = "1", features = [
+    "rt",
+    "macros",
+    "sync",
+    "process",
+    "fs",
+    "io-util",
+    "time",
+] }
+
+# Speech recognition via whisper.cpp bindings. Loads ggml `.bin` models directly.
+# CPU by default; the `cuda`, `metal` and `vulkan` features enable the
+# corresponding whisper.cpp GPU backend at compile time.
+whisper-rs = "0.16"
+
+# PPTX generation (media embedding). Default features are kept because
+# ppt-rs 0.2.23+ compiles its `export` module unconditionally and requires
+# the `pdf-native`/`pdfrs` dependency even when unused.
+ppt-rs = "0.2"
+
+# OOXML post-processing (inject click-reveal <p:timing> animations).
+zip = "2"
+
+# Silent update check against the GitHub releases API.
+reqwest = { version = "0.12", default-features = false, features = [
+    "blocking",
+    "rustls-tls",
+    "json",
+] }
+
+# Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true

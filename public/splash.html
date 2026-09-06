@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark" />
+    <title>Material Dictation</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        overflow: hidden;
+        user-select: none;
+      }
+      .wrap {
+        text-align: center;
+      }
+      .title {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 18px;
+      }
+      .spinner {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto;
+        border: 3px solid rgba(255, 255, 255, 0.15);
+        border-top-color: #4f9cf9;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="title">Material Dictation</div>
+      <div class="spinner"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+:root {
+  --titlebar-height: 40px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+/*
+ * FluentProvider 会包一层容器且不占满视口。为了让内容区真正填满整个窗口
+ * （否则开始页内容会悬浮在上部、深色模式下窗口底部露白），这里直接用 vh 撑满，
+ * 并用主题 token 作为整窗背景，保证深浅色下都铺满。
+ */
+.app-shell {
+  height: 100vh;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--colorNeutralBackground1);
+}
+
+.app-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
